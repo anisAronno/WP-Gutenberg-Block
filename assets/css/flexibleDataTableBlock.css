@@ -1,0 +1,6 @@
+/* Admin styles for the FlexibleDataTableBlock menu */
+.wrap .heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

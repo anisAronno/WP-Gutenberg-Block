@@ -1,0 +1,54 @@
+{
+    "name": "anisaronno/flexible-data-table-block",
+    "description": "Flexible Data Table Block",
+    "type": "wordpress-plugin",
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "FlexibleDataTableBlock\\": "includes/",
+            "FlexibleDataTableBlock\\Tests\\": "tests/phpunit/"
+        }
+    },
+    "authors": [
+        {
+            "name": "FlexibleDataTableBlock Rahaman",
+            "email": "contact@anichur.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "wedevs/wp-utils": "dev-main"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "3.7.2",
+        "wp-coding-standards/wpcs": "^3.0",
+        "wp-phpunit/wp-phpunit": "dev-master",
+        "yoast/phpunit-polyfills": "^3.0@dev",
+        "phpcompatibility/php-compatibility": "^9.0",
+        "phpcompatibility/phpcompatibility-wp": "*",
+        "phpunit/phpunit": "9.6",
+        "tareq1988/wp-php-cs-fixer": "dev-master"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": [
+            "vendor/bin/phpcs -p -s"
+        ],
+        "phpcs:report": [
+            "vendor/bin/phpcs --report-file='phpcs-report.txt'"
+        ],
+        "phpcbf": [
+            "vendor/bin/phpcbf -p"
+        ],
+        "phpcs:fix": [
+            "vendor/bin/phpcbf -p"
+        ],
+        "test": [
+            "vendor/bin/phpunit --bootstrap tests/phpunit/bootstrap.php tests/phpunit/"
+        ]
+    }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "lexible-data-table-block",
+  "version": "1.0.1",
+  "description": "This is a plugin for Gutenberg assignment",
+  "main": "build/index.js",
+  "author": "anisAronno",
+  "license": "GPL v3 or later",
+  "scripts": {
+    "build": "wp-scripts build",
+    "format": "wp-scripts format",
+    "packages-update": "wp-scripts packages-update",
+    "plugin-zip": "wp-scripts plugin-zip",
+    "start": "wp-scripts start",
+    "makepot": "wp i18n make-pot . languages/flexibleDataTableBlock.pot",
+    "lint": "eslint --config .eslintrc.js --ext .js src",
+    "lint-fix": "npm run lint -- --fix",
+    "zip": "node scripts/zip",
+    "version": "node scripts/version-replace",
+    "release": "npm run build && npm run version && npm run makepot && npm run zip"
+  },
+  "devDependencies": {
+    "@wordpress/eslint-plugin": "^13.4.0",
+    "@wordpress/hooks": "^3.20.0",
+    "@wordpress/i18n": "^4.50.0",
+    "@wordpress/scripts": "^25.4.0",
+    "eslint": "^8.56.0",
+    "fs-extra": "^11.2.0",
+    "replace-in-file": "^8.0.0"
+  }
+}

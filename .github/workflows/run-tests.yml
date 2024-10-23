@@ -1,0 +1,103 @@
+name: WordPress Plugin Tests
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} Test
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php: ['7.4', '8.1']
+        
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
+          tools: composer:v2, wp-cli
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Copy PHPUnit config
+        run: |
+          if [ ! -f "phpunit.xml" ]; then
+            cp phpunit.xml.dist phpunit.xml
+          fi
+
+      - name: Set up WordPress Test Environment
+        run: |
+          # Set up directories
+          mkdir -p /tmp/wordpress-tests-lib
+          mkdir -p /tmp/wordpress
+
+          # Download WordPress test suite
+          svn co --quiet https://develop.svn.wordpress.org/tags/6.4.0/tests/phpunit/includes/ /tmp/wordpress-tests-lib/includes
+          svn co --quiet https://develop.svn.wordpress.org/tags/6.4.0/tests/phpunit/data/ /tmp/wordpress-tests-lib/data
+
+          # Download WordPress
+          curl -s https://wordpress.org/wordpress-6.4.tar.gz | tar zx -C /tmp/wordpress --strip-components=1
+
+          # Set up wp-tests-config.php
+          cp /tmp/wordpress-tests-lib/includes/bootstrap.php /tmp/wordpress-tests-lib/
+          cd /tmp/wordpress-tests-lib
+          cp wp-tests-config-sample.php wp-tests-config.php 2>/dev/null || wget -nv -O wp-tests-config.php https://raw.githubusercontent.com/wp-cli/wp-cli-tests/master/wp-tests-config-sample.php
+          sed -i "s/youremptytestdbnamehere/wordpress_test/" wp-tests-config.php
+          sed -i "s/yourusernamehere/root/" wp-tests-config.php
+          sed -i "s/yourpasswordhere/root/" wp-tests-config.php
+          sed -i "s|localhost|127.0.0.1:3306|" wp-tests-config.php
+
+          # Create wp-tests-config.php if it doesn't exist
+          echo "define( 'WP_TESTS_DOMAIN', 'example.org' );" >> wp-tests-config.php
+          echo "define( 'WP_TESTS_EMAIL', 'admin@example.org' );" >> wp-tests-config.php
+          echo "define( 'WP_TESTS_TITLE', 'Test Blog' );" >> wp-tests-config.php
+          echo "define( 'WP_PHP_BINARY', 'php' );" >> wp-tests-config.php
+          echo "define( 'WPLANG', '' );" >> wp-tests-config.php
+
+          # Set environment variables for tests
+          echo "WP_TESTS_DIR=/tmp/wordpress-tests-lib" >> $GITHUB_ENV
+          echo "WP_CORE_DIR=/tmp/wordpress" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: composer test
+
+      - name: Store test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-php${{ matrix.php }}
+          path: tests/_output
+          retention-days: 5

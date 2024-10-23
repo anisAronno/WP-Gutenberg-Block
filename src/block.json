@@ -1,0 +1,29 @@
+{
+    "apiVersion": 3,
+    "name": "custom/flexible-data-table",
+    "title": "Flexible Data Table",
+    "icon": "editor-table",
+    "category": "widgets",
+    "attributes": {
+        "visibleColumns": {
+            "type": "object",
+            "default": {
+                "ID": true,
+                "First Name": true,
+                "Last Name": true,
+                "Email": true,
+                "Date": true
+            }
+        },
+        "tableData": {
+            "type": "object",
+            "default": { "headers": [], "rows": [] }
+        }
+    },
+    "supports": {
+        "html": false
+    },
+    "editorScript": "file:./build/index.js",
+    "editorStyle": "file:./build/editor.css",
+    "style": "file:./build/style.css"
+}
