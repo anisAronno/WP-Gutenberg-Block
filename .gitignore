@@ -18,3 +18,4 @@ workbench
 composer.lock
 tests/temp
 phpcs.xml
+.idea
